@@ -1,2 +1,128 @@
-Hello World
-1234
+<html>
+<script src='https://d3js.org/d3.v5.min.js'></script>
+<style> circle {fill: lightblue; stroke: black;} </style>
+
+<body onload='init_all()'>
+
+<h2>MPG</h2>
+<p>Analyses of Car Fuel Consumption</p>
+
+<div>
+  <button onclick="paint_mpg_by_displacement()">MPG by Displacement</button>
+  <button onclick="paint_mpg_by_power()">MPG by Power</button>
+  <button onclick="paint_mpg_by_weight()">MPG by Weight</button>
+  <button onclick="clear_mpg()"> Clear </button>
+</div>
+
+<div id="div_mpg"></div>
+
+<div id="div_details"></div>
+
+
+<script>
+
+var mpg_width=600, mpg_height=500, mpg_margin=80;
+var data;
+
+function clear_mpg() {
+  d3.select('#div_mpg').selectAll('*').remove();
+}
+
+async function init_all() {
+  data = await d3.csv('https://danqian1296.github.io/DV/auto-mpg.csv');
+  await paint_mpg_by_displacement();
+}
+
+async function paint_mpg_by_displacement() {
+  clear_mpg();
+  xscale = d3.scaleLinear().domain([0, 600]).range([0, mpg_width - mpg_margin * 2]);
+  await paint_mpg(
+    xscale,
+    function(d,i) {return xscale(Number(d.displacement));},
+    "Displacement (cubic inches)"
+  );
+}
+
+async function paint_mpg_by_displacement() {
+  clear_mpg();
+  xscale = d3.scaleLinear().domain([0, 500]).range([0, mpg_width - mpg_margin * 2]);
+  await paint_mpg(
+    xscale,
+    function(d,i) {return xscale(Number(d.displacement));},
+    "Displacement (cubic inches)"
+  );
+}
+
+async function paint_mpg_by_power() {
+  clear_mpg();
+  xscale = d3.scaleLinear().domain([0, 250]).range([0, mpg_width - mpg_margin * 2]);
+  await paint_mpg(
+    xscale,
+    function(d,i) {return xscale(Number(d.horsepower));},
+    "Power (horsepower)"
+  );
+}
+
+async function paint_mpg_by_weight() {
+  clear_mpg();
+  xscale = d3.scaleLinear().domain([1000, 6000]).range([0, mpg_width - mpg_margin * 2]);
+  await paint_mpg(
+    xscale,
+    function(d,i) {return xscale(Number(d.weight));},
+    "Weight (pounds)"
+  );
+}
+
+async function paint_mpg(xscale, xfunc, xtext) {
+  // Create the MPG graph
+  d3.select('#div_mpg')
+    .append('svg')
+    .attr('width', mpg_width)
+    .attr('height', mpg_height);
+
+  yscale = d3.scaleLinear().domain([0, 60]).range([mpg_height - mpg_margin * 2, 0]);
+
+  // Plot the data
+  d3.select('#div_mpg').select('svg')
+    .append('g')
+      .attr('transform', 'translate(' + mpg_margin + ',' + mpg_margin + ')')
+    .selectAll()
+    .data(data)
+    .enter()
+      .append('circle')
+      .attr('cx', xfunc)
+      .attr('cy', function(d,i) {return yscale(Number(d.mpg));})
+      .attr('r', function(d,i) {return Number(d.cylinders);});
+
+  // Y-axis (mpg)
+  d3.select('#div_mpg').select('svg')
+    .append('g')
+      .attr('transform', 'translate(' + mpg_margin + ', ' + mpg_margin + ')') 
+      .call(d3.axisLeft(yscale)
+        .tickValues([0,20,40,60]).tickFormat(d3.format("~s")));
+
+  d3.select('#div_mpg').select('svg')
+    .append("text")
+      .attr('transform', 'translate(' + (mpg_margin / 2) + ', ' + (mpg_height / 2) + ')')
+      .style("text-anchor", "middle")
+      .text("MPG");    
+
+  // X-axis
+  d3.select('#div_mpg').select('svg')
+    .append('g')
+      .attr('transform', 'translate(' + mpg_margin + ', ' + (mpg_height - mpg_margin) + ')') 
+      .call(d3.axisBottom(xscale)
+        .ticks(4));
+
+  d3.select('#div_mpg').select('svg')
+    .append("text")             
+      .attr("transform", 'translate(' + (mpg_width / 2) + ', ' + (mpg_height - mpg_margin / 2)+ ')')
+      .style("text-anchor", "middle")
+      .text(xtext);
+}
+
+</script>
+
+</body>
+</html>
+
