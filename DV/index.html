@@ -1,4 +1,15 @@
 <html>
+
+<head>
+<style>
+/* Create two equal columns that floats next to each other */
+.column {
+  float: left;
+  width: 50%;
+}
+</style>
+</head>
+
 <script src='https://d3js.org/d3.v5.min.js'></script>
 
 <body onload='init_all()'>
@@ -101,7 +112,7 @@ function update_summary(summary_text) {
       .html(summary_text);
 }
 
-function update_details(car_data) {
+function update_details(d, i) {
   d3.select("#div_details").selectAll('*').remove();
   d3.select('#div_details')
     .append('svg')
@@ -114,10 +125,10 @@ function update_details(car_data) {
       .attr("height", details_height - summary_margin)
       .attr("transform", 'translate(' + summary_margin + ', ' + summary_margin + ')')
       .append("xhtml:div")
-      .html(car_data.origin);
+      .html(d.car_name);
 }
 
-function clear_details() {
+function clear_details(d, i) {
   d3.select("#div_details").selectAll('*').remove();
 }
 
@@ -143,8 +154,8 @@ async function paint_mpg(xscale, xfunc, xtext) {
       .attr('cx', xfunc)
       .attr('cy', function(d,i) {return yscale(Number(d.mpg));})
       .attr('r', function(d,i) {return Number(d.cylinders);})
-      .attr('onmouseover', function(d) {update_details(d);})
-      .attr('onmouseout', 'clear_details();');
+      .on('mouseover', update_details)
+      .on('mouseout', clear_details);
 
 
   // Y-axis (mpg)
