@@ -7,6 +7,10 @@
   float: left;
   width: 50%;
 }
+.clearfix:after {
+  display: table;
+  clear: both;
+}
 </style>
 </head>
 
@@ -14,8 +18,13 @@
 
 <body onload="init_all()">
 
-<h2>MPG</h2>
-<p>Analyses of Car Fuel Consumption</p>
+<h2>Analysis of Car Fuel Consumption</h2>
+
+<div>
+  <p>
+    Here is an analysis of <a href="https://www.kaggle.com/uciml/autompg-dataset?select=auto-mpg.csv"> the car fuel consumption data between 1970 and 1982</a> based on the displacement, horsepower, weight, and model year.
+  </p>
+<div>
 
 <div id="mpg_tab">
   <input type="radio" name="mpg_type" value="displacement" onclick="refresh_mpg()" checked> <b>MPG by Displacement</b>
@@ -24,51 +33,52 @@
   <input type="radio" name="mpg_type" value="model_year" onclick="refresh_mpg()"> <b>MPG by Model Year</b>
 </div>
 
-<br>
-
-<div>
-  Number of Cylinders: 
-  <input type="checkbox" onclick="click_cylinders(this, 4);" checked>4
-  <input type="checkbox" onclick="click_cylinders(this, 6);" checked>6
-  <input type="checkbox" onclick="click_cylinders(this, 8);" checked>8
-</div>
-
-<div>
-  Displacement Range:
-  <input type="number" name="min_displacement" min="0" max="600" value="0" step="10" onchange="change_min_displacement(value);">ci --
-  <input type="number" name="max_displacement" min="0" max="600" value="600" step="10" onchange="change_max_displacement(value);">ci
-</div>
-
-<div>
-  Power Range:
-  <input type="number" name="min_power" min="0" max="250" value="0" step="10" onchange="change_min_hp(value);">hp -- 
-  <input type="number" name="max_power" min="0" max="250" value="250" step="10" onchange="change_max_hp(value);">hp
-</div>
-
-<div>
-  Weight Range:
-  <input type="number" name="min_weight" min="1000" max="6000" value="1000" step="100" onchange="change_min_weight(value);">lbs -- 
-  <input type="number" name="max_weight" min="1000" max="6000" value="6000" step="100" onchange="change_max_weight(value);">lbs
-</div>
-
-<div>
-  Model Year Range:
-  19<input type="number" name="min_model_year" min="70" max="85" value="70" onchange="change_min_model_year(value);"> --
-  19<input type="number" name="max_model_year" min="70" max="85" value="85" onchange="change_max_model_year(value);">
-</div>
-
 <div id="div_summary"></div>
 
 <div class="row">
   <div id="div_mpg" class="column"></div>
-  <div id="div_details" class="column"></div>
+  <div class="column">
+    <div id="div_filters" class="row">
+      <div>
+        Number of Cylinders:
+        <input type="checkbox" onclick="click_cylinders(this, 3);" checked>3
+        <input type="checkbox" onclick="click_cylinders(this, 4);" checked>4
+        <input type="checkbox" onclick="click_cylinders(this, 5);" checked>5
+        <input type="checkbox" onclick="click_cylinders(this, 6);" checked>6
+        <input type="checkbox" onclick="click_cylinders(this, 8);" checked>8
+      </div>
+      <div>
+        Displacement Range:
+        <input type="number" name="min_displacement" min="0" max="600" value="0" step="10" onchange="change_min_displacement(value);"> ci --
+        <input type="number" name="max_displacement" min="0" max="600" value="600" step="10" onchange="change_max_displacement(value);"> ci
+      </div>
+      <div>
+        Power Range:
+        <input type="number" name="min_power" min="0" max="250" value="0" step="10" onchange="change_min_hp(value);"> hp --
+        <input type="number" name="max_power" min="0" max="250" value="250" step="10" onchange="change_max_hp(value);"> hp
+      </div>
+      <div>
+        Weight Range:
+        <input type="number" name="min_weight" min="1000" max="6000" value="1000" step="100" onchange="change_min_weight(value);"> lbs --
+        <input type="number" name="max_weight" min="1000" max="6000" value="6000" step="100" onchange="change_max_weight(value);"> lbs
+      </div>
+      <div>
+        Model Year Range:
+        19<input type="number" name="min_model_year" min="70" max="85" value="70" onchange="change_min_model_year(value);"> --
+        19<input type="number" name="max_model_year" min="70" max="85" value="85" onchange="change_max_model_year(value);">
+      </div>
+      <br><br><br>
+    </div>
+    <div id="div_details" class="row"></div>
+  </div>
+  <br>
 </div>
 
 <script>
 
-const summary_width=600, summary_height=200, summary_margin=50;
-const mpg_width=600, mpg_height=500, mpg_margin=80;
-const details_width=300, details_height=500, details_margin=80;
+const summary_width=800, summary_height=200, summary_margin=40;
+const mpg_width=600, mpg_height=500, mpg_margin=60;
+const details_width=300, details_height=500, details_margin=0;
 
 var data;
 var tab = "displacement";
@@ -186,9 +196,9 @@ async function paint_mpg_by_weight() {
 
 async function paint_mpg_by_model_year() {
   clear_mpg();
-  update_summary('TODO: some analysis for model year');
+  update_summary('MPG went up over the years. Within each model years, the cars with fewer cylinders (indicated by smaller circles on top) tend to have higher MPG than the cars with more cylinders (indicated by the bigger circles on the bottom). There is a visible spike in MPG for the 1980 model year. The cars of that model year also tend to have fewer cylinders. This might be caused by the oil crisis (Iranian Revolution) in 1978-1779.');
 
-  xscale = d3.scaleLinear().domain([70, 85]).range([0, mpg_width - mpg_margin * 2]);
+  xscale = d3.scaleLinear().domain([69, 84]).range([0, mpg_width - mpg_margin * 2]);
   await paint_mpg(
     xscale,
     function(d,i) {return xscale(Number(d.model_year));},
@@ -230,8 +240,9 @@ function update_details(d, i) {
         "Year: 19" + d.model_year + " <br>" +
         "MPG: " + d.mpg + " <br>" +
         "HP: " + d.horsepower + " <br>" +
-        "Weight: " + d.weight + "lbs <br>" +
-        "Displacement: " + d.displacement + "ci");
+        "Weight: " + d.weight + " lbs <br>" +
+        "Displacement: " + d.displacement + " ci <br>" +
+        "Cylinders: " + d.cylinders);
 }
 
 function clear_details(d, i) {
@@ -258,12 +269,12 @@ async function paint_mpg(xscale, xfunc, xtext) {
     .attr('width', mpg_width)
     .attr('height', mpg_height);
 
-  yscale = d3.scaleLinear().domain([0, 60]).range([mpg_height - mpg_margin * 2, 0]);
+  yscale = d3.scaleLinear().domain([0, 60]).range([mpg_height - mpg_margin, 0]);
 
   // Plot the data
   d3.select('#div_mpg').select('svg')
     .append('g')
-      .attr('transform', 'translate(' + mpg_margin + ',' + mpg_margin + ')')
+      .attr('transform', 'translate(' + mpg_margin + ', 0)')
     .selectAll()
     .data(data)
     .enter()
@@ -281,9 +292,9 @@ async function paint_mpg(xscale, xfunc, xtext) {
   // Y-axis (mpg)
   d3.select('#div_mpg').select('svg')
     .append('g')
-      .attr('transform', 'translate(' + mpg_margin + ', ' + mpg_margin + ')') 
+      .attr('transform', 'translate(' + mpg_margin + ', 0)') 
       .call(d3.axisLeft(yscale)
-        .tickValues([0,20,40,60]).tickFormat(d3.format("~s")));
+        .ticks(5));
 
   d3.select('#div_mpg').select('svg')
     .append("text")
@@ -296,7 +307,7 @@ async function paint_mpg(xscale, xfunc, xtext) {
     .append('g')
       .attr('transform', 'translate(' + mpg_margin + ', ' + (mpg_height - mpg_margin) + ')') 
       .call(d3.axisBottom(xscale)
-        .ticks(4));
+        .ticks(5));
 
   d3.select('#div_mpg').select('svg')
     .append("text")             
@@ -308,5 +319,6 @@ async function paint_mpg(xscale, xfunc, xtext) {
 </script>
 
 </body>
+
 </html>
 
