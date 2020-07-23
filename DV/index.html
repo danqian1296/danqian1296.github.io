@@ -17,12 +17,18 @@
 <h2>MPG</h2>
 <p>Analyses of Car Fuel Consumption</p>
 
+<div id="mpg_tab">
+  <input type="radio" name="mpg_type" value="displacement" onclick="refresh_mpg()" checked> <b>MPG by Displacement</b>
+  <input type="radio" name="mpg_type" value="power" onclick="refresh_mpg()"> <b>MPG by Power</b>
+  <input type="radio" name="mpg_type" value="weight" onclick="refresh_mpg()"> <b>MPG by Weight</b>
+  <input type="radio" name="mpg_type" value="model_year" onclick="refresh_mpg()"> <b>MPG by Model Year</b>
+</div>
+
 <div>
-  <button type="button" id="mpg_displacement_button" onclick="paint_mpg_by_displacement()">MPG by Displacement</button>
-  <button type="button" id="mpg_power_button" onclick="paint_mpg_by_power()">MPG by Power</button>
-  <button type="button" id="mpg_weight_button" onclick="paint_mpg_by_weight()">MPG by Weight</button>
-  <button type="button" id="mpg_year_button" onclick="paint_mpg_by_model_year()">MPG by Model Year</button>
-  <button onclick="clear_mpg()"> Clear </button>
+  Number of Cylinders: 
+  <input type="checkbox" onclick="click_cylinders(this, 4);" checked>4
+  <input type="checkbox" onclick="click_cylinders(this, 6);" checked>6
+  <input type="checkbox" onclick="click_cylinders(this, 8);" checked>8
 </div>
 
 <div id="div_summary"></div>
@@ -38,6 +44,30 @@ var summary_width=600, summary_height=200, summary_margin=50;
 var mpg_width=600, mpg_height=500, mpg_margin=80;
 var details_width=200, details_height=500, mpg_margin=80;
 var data;
+var tab = "displacement";
+var cylinders_selected = [true,true,true,true,true,true,true,true,true,true,true,true];
+
+function click_cylinders(cb, cylinders) {
+  cylinders_selected[cylinders] = cb.checked;
+  refresh_mpg();
+}
+
+async function refresh_mpg() {
+  switch (d3.select('input[name="mpg_type"]:checked').node().value) {
+  case "displacement":
+    await paint_mpg_by_displacement();
+    break;
+  case "weight":
+    await paint_mpg_by_weight();
+    break;
+  case "power":
+    await paint_mpg_by_power();
+    break;
+  case "model_year":
+    await paint_mpg_by_model_year();
+    break;
+  }
+}
 
 function clear_mpg() {
   d3.select('#div_mpg').selectAll('*').remove();
@@ -132,6 +162,11 @@ function clear_details(d, i) {
   d3.select("#div_details").selectAll('*').remove();
 }
 
+function is_car_selected(car_data) {
+  if (!cylinders_selected[car_data.cylinders]) return false;
+  return true;
+}
+
 async function paint_mpg(xscale, xfunc, xtext) {
   // Create the MPG graph
   d3.select('#div_mpg')
@@ -150,7 +185,8 @@ async function paint_mpg(xscale, xfunc, xtext) {
     .enter()
       .append('circle')
       .attr('stroke', 'grey')
-      .attr('fill', function(d) {if (d.cylinders < 5) {return 'blue';} return 'green';} )
+      .attr('fill-opacity', '50%')
+      .attr('fill', function(d) {return is_car_selected(d) ? "green" : "grey";} )
       .attr('cx', xfunc)
       .attr('cy', function(d,i) {return yscale(Number(d.mpg));})
       .attr('r', function(d,i) {return Number(d.cylinders);})
