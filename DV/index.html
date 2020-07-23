@@ -49,22 +49,22 @@
       </div>
       <div>
         Displacement Range:
-        <input type="number" name="min_displacement" min="0" max="600" value="0" step="10" onchange="change_min_displacement(value);"> ci --
+        <input type="number" name="min_displacement" min="0" max="600" value="0" step="10" onchange="change_min_displacement(value);"> ci -
         <input type="number" name="max_displacement" min="0" max="600" value="600" step="10" onchange="change_max_displacement(value);"> ci
       </div>
       <div>
         Power Range:
-        <input type="number" name="min_power" min="0" max="250" value="0" step="10" onchange="change_min_hp(value);"> hp --
+        <input type="number" name="min_power" min="0" max="250" value="0" step="10" onchange="change_min_hp(value);"> hp -
         <input type="number" name="max_power" min="0" max="250" value="250" step="10" onchange="change_max_hp(value);"> hp
       </div>
       <div>
         Weight Range:
-        <input type="number" name="min_weight" min="1000" max="6000" value="1000" step="100" onchange="change_min_weight(value);"> lbs --
+        <input type="number" name="min_weight" min="1000" max="6000" value="1000" step="100" onchange="change_min_weight(value);"> lbs -
         <input type="number" name="max_weight" min="1000" max="6000" value="6000" step="100" onchange="change_max_weight(value);"> lbs
       </div>
       <div>
         Model Year Range:
-        19<input type="number" name="min_model_year" min="70" max="85" value="70" onchange="change_min_model_year(value);"> --
+        19<input type="number" name="min_model_year" min="70" max="85" value="70" onchange="change_min_model_year(value);"> -
         19<input type="number" name="max_model_year" min="70" max="85" value="85" onchange="change_max_model_year(value);">
       </div>
       <br><br><br>
@@ -160,7 +160,7 @@ async function init_all() {
 
 async function paint_mpg_by_displacement() {
   clear_mpg();
-  update_summary('TODO: some analysis for displacement');
+  update_summary('There is a clear negative corelation between the MPG and the displacement. Even if we control for the weight (by setting the weight range to 3000lbs to 3500lbs, for instance), the cars with greater displacement tend to have lower MPG. Also note that the cars with greater displacements have more cylinders (indicated by the larger circles on the right). This is because overly large cylinders and overly small cylinders are uneconomic, making the displacement per cylinder relatively constant.');
 
   xscale = d3.scaleLinear().domain([0, 600]).range([0, mpg_width - mpg_margin * 2]);
   await paint_mpg(
@@ -196,7 +196,7 @@ async function paint_mpg_by_weight() {
 
 async function paint_mpg_by_model_year() {
   clear_mpg();
-  update_summary('MPG went up over the years. Within each model years, the cars with fewer cylinders (indicated by smaller circles on top) tend to have higher MPG than the cars with more cylinders (indicated by the bigger circles on the bottom). There is a visible spike in MPG for the 1980 model year. The cars of that model year also tend to have fewer cylinders. This might be caused by the oil crisis (Iranian Revolution) in 1978-1779.');
+  update_summary('MPG went up over the years. Within each model years, the cars with fewer cylinders (indicated by smaller circles on top) tend to have higher MPG than the cars with more cylinders (indicated by the bigger circles on the bottom). There is a visible spike in MPG for the 1980 model year. The cars of that model year also tend to have fewer cylinders. This is likely related to the oil crisis (Iranian Revolution) in 1978-1779.');
 
   xscale = d3.scaleLinear().domain([69, 84]).range([0, mpg_width - mpg_margin * 2]);
   await paint_mpg(
@@ -223,6 +223,10 @@ function update_summary(summary_text) {
 }
 
 function update_details(d, i) {
+  d3.select(this)
+    .attr("r", Number(d.cylinders) + 3)
+    .style("fill", "red");
+
   d3.select("#div_details").selectAll('*').remove();
   d3.select('#div_details')
     .append('svg')
@@ -246,6 +250,10 @@ function update_details(d, i) {
 }
 
 function clear_details(d, i) {
+  d3.select(this)
+    .attr("r", Number(d.cylinders))
+    .style("fill", is_car_selected(d) ? "green" : "grey");
+
   d3.select("#div_details").selectAll('*').remove();
 }
 
