@@ -16,15 +16,16 @@
 
 <div id="div_summary"></div>
 
-<div id="div_mpg"></div>
-
-<div id="div_details"></div>
-
+<div class="row">
+  <div id="div_mpg" class="column"></div>
+  <div id="div_details" class="column"></div>
+</div>
 
 <script>
 
 var summary_width=600, summary_height=200, summary_margin=50;
 var mpg_width=600, mpg_height=500, mpg_margin=80;
+var details_width=200, details_height=500, mpg_margin=80;
 var data;
 
 function clear_mpg() {
@@ -100,6 +101,26 @@ function update_summary(summary_text) {
       .html(summary_text);
 }
 
+function update_details(car_data) {
+  d3.select("#div_details").selectAll('*').remove();
+  d3.select('#div_details')
+    .append('svg')
+    .attr('width', details_width)
+    .attr('height', details_height);
+
+  d3.select('#div_details').select('svg')
+    .append("foreignObject")
+      .attr("width", details_width - summary_margin)
+      .attr("height", details_height - summary_margin)
+      .attr("transform", 'translate(' + summary_margin + ', ' + summary_margin + ')')
+      .append("xhtml:div")
+      .html(car_data.origin);
+}
+
+function clear_details() {
+  d3.select("#div_details").selectAll('*').remove();
+}
+
 async function paint_mpg(xscale, xfunc, xtext) {
   // Create the MPG graph
   d3.select('#div_mpg')
@@ -121,7 +142,10 @@ async function paint_mpg(xscale, xfunc, xtext) {
       .attr('fill', function(d) {if (d.cylinders < 5) {return 'blue';} return 'green';} )
       .attr('cx', xfunc)
       .attr('cy', function(d,i) {return yscale(Number(d.mpg));})
-      .attr('r', function(d,i) {return Number(d.cylinders);});
+      .attr('r', function(d,i) {return Number(d.cylinders);})
+      .attr('onmouseover', function(d) {update_details(d);})
+      .attr('onmouseout', 'clear_details();');
+
 
   // Y-axis (mpg)
   d3.select('#div_mpg').select('svg')
