@@ -1,6 +1,5 @@
 <html>
 <script src='https://d3js.org/d3.v5.min.js'></script>
-<style> circle {fill: lightblue; stroke: black;} </style>
 
 <body onload='init_all()'>
 
@@ -8,11 +7,14 @@
 <p>Analyses of Car Fuel Consumption</p>
 
 <div>
-  <button onclick="paint_mpg_by_displacement()">MPG by Displacement</button>
-  <button onclick="paint_mpg_by_power()">MPG by Power</button>
-  <button onclick="paint_mpg_by_weight()">MPG by Weight</button>
+  <button type="button" id="mpg_displacement_button" onclick="paint_mpg_by_displacement()">MPG by Displacement</button>
+  <button type="button" id="mpg_power_button" onclick="paint_mpg_by_power()">MPG by Power</button>
+  <button type="button" id="mpg_weight_button" onclick="paint_mpg_by_weight()">MPG by Weight</button>
+  <button type="button" id="mpg_year_button" onclick="paint_mpg_by_model_year()">MPG by Model Year</button>
   <button onclick="clear_mpg()"> Clear </button>
 </div>
+
+<div id="div_summary"></div>
 
 <div id="div_mpg"></div>
 
@@ -21,6 +23,7 @@
 
 <script>
 
+var summary_width=600, summary_height=200, summary_margin=50;
 var mpg_width=600, mpg_height=500, mpg_margin=80;
 var data;
 
@@ -35,17 +38,9 @@ async function init_all() {
 
 async function paint_mpg_by_displacement() {
   clear_mpg();
-  xscale = d3.scaleLinear().domain([0, 600]).range([0, mpg_width - mpg_margin * 2]);
-  await paint_mpg(
-    xscale,
-    function(d,i) {return xscale(Number(d.displacement));},
-    "Displacement (cubic inches)"
-  );
-}
+  update_summary('TODO: some analysis for displacement');
 
-async function paint_mpg_by_displacement() {
-  clear_mpg();
-  xscale = d3.scaleLinear().domain([0, 500]).range([0, mpg_width - mpg_margin * 2]);
+  xscale = d3.scaleLinear().domain([0, 600]).range([0, mpg_width - mpg_margin * 2]);
   await paint_mpg(
     xscale,
     function(d,i) {return xscale(Number(d.displacement));},
@@ -55,6 +50,8 @@ async function paint_mpg_by_displacement() {
 
 async function paint_mpg_by_power() {
   clear_mpg();
+  update_summary('TODO: some analysis for power');
+
   xscale = d3.scaleLinear().domain([0, 250]).range([0, mpg_width - mpg_margin * 2]);
   await paint_mpg(
     xscale,
@@ -65,12 +62,42 @@ async function paint_mpg_by_power() {
 
 async function paint_mpg_by_weight() {
   clear_mpg();
+  update_summary('TODO: some analysis for weight');
+
   xscale = d3.scaleLinear().domain([1000, 6000]).range([0, mpg_width - mpg_margin * 2]);
   await paint_mpg(
     xscale,
     function(d,i) {return xscale(Number(d.weight));},
     "Weight (pounds)"
   );
+}
+
+async function paint_mpg_by_model_year() {
+  clear_mpg();
+  update_summary('TODO: some analysis for model year');
+
+  xscale = d3.scaleLinear().domain([70, 85]).range([0, mpg_width - mpg_margin * 2]);
+  await paint_mpg(
+    xscale,
+    function(d,i) {return xscale(Number(d.model_year));},
+    "Model Year"
+  );
+}
+
+function update_summary(summary_text) {
+  d3.select("#div_summary").selectAll('*').remove();
+  d3.select('#div_summary')
+    .append('svg')
+    .attr('width', summary_width)
+    .attr('height', summary_height);
+
+  d3.select('#div_summary').select('svg')
+    .append("foreignObject")
+      .attr("width", summary_width - summary_margin * 2)
+      .attr("height", summary_height - summary_margin * 2)
+      .attr("transform", 'translate(' + summary_margin + ', ' + summary_margin + ')')
+      .append("xhtml:div")
+      .html(summary_text);
 }
 
 async function paint_mpg(xscale, xfunc, xtext) {
@@ -90,6 +117,8 @@ async function paint_mpg(xscale, xfunc, xtext) {
     .data(data)
     .enter()
       .append('circle')
+      .attr('stroke', 'grey')
+      .attr('fill', function(d) {if (d.cylinders < 5) {return 'blue';} return 'green';} )
       .attr('cx', xfunc)
       .attr('cy', function(d,i) {return yscale(Number(d.mpg));})
       .attr('r', function(d,i) {return Number(d.cylinders);});
