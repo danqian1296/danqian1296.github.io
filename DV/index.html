@@ -10,9 +10,9 @@
 </style>
 </head>
 
-<script src='https://d3js.org/d3.v5.min.js'></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
 
-<body onload='init_all()'>
+<body onload="init_all()">
 
 <h2>MPG</h2>
 <p>Analyses of Car Fuel Consumption</p>
@@ -24,11 +24,37 @@
   <input type="radio" name="mpg_type" value="model_year" onclick="refresh_mpg()"> <b>MPG by Model Year</b>
 </div>
 
+<br>
+
 <div>
   Number of Cylinders: 
   <input type="checkbox" onclick="click_cylinders(this, 4);" checked>4
   <input type="checkbox" onclick="click_cylinders(this, 6);" checked>6
   <input type="checkbox" onclick="click_cylinders(this, 8);" checked>8
+</div>
+
+<div>
+  Displacement Range:
+  <input type="number" name="min_displacement" min="0" max="600" value="0" step="10" onchange="change_min_displacement(value);">ci --
+  <input type="number" name="max_displacement" min="0" max="600" value="600" step="10" onchange="change_max_displacement(value);">ci
+</div>
+
+<div>
+  Power Range:
+  <input type="number" name="min_power" min="0" max="250" value="0" step="10" onchange="change_min_hp(value);">hp -- 
+  <input type="number" name="max_power" min="0" max="250" value="250" step="10" onchange="change_max_hp(value);">hp
+</div>
+
+<div>
+  Weight Range:
+  <input type="number" name="min_weight" min="1000" max="6000" value="1000" step="100" onchange="change_min_weight(value);">lbs -- 
+  <input type="number" name="max_weight" min="1000" max="6000" value="6000" step="100" onchange="change_max_weight(value);">lbs
+</div>
+
+<div>
+  Model Year Range:
+  19<input type="number" name="min_model_year" min="70" max="85" value="70" onchange="change_min_model_year(value);"> --
+  19<input type="number" name="max_model_year" min="70" max="85" value="85" onchange="change_max_model_year(value);">
 </div>
 
 <div id="div_summary"></div>
@@ -40,15 +66,59 @@
 
 <script>
 
-var summary_width=600, summary_height=200, summary_margin=50;
-var mpg_width=600, mpg_height=500, mpg_margin=80;
-var details_width=200, details_height=500, mpg_margin=80;
+const summary_width=600, summary_height=200, summary_margin=50;
+const mpg_width=600, mpg_height=500, mpg_margin=80;
+const details_width=300, details_height=500, details_margin=80;
+
 var data;
 var tab = "displacement";
 var cylinders_selected = [true,true,true,true,true,true,true,true,true,true,true,true];
-
+var min_hp=0, max_hp=250;
+var min_weight=1000, max_weight=6000;
+var min_displacement=0, max_displacement=600;
+var min_model_year=70, max_model_year=85;
 function click_cylinders(cb, cylinders) {
   cylinders_selected[cylinders] = cb.checked;
+  refresh_mpg();
+}
+
+function change_min_displacement(ci) {
+  min_displacement = ci;
+  refresh_mpg();
+}
+
+function change_max_displacement(ci) {
+  max_displacement = ci;
+  refresh_mpg();
+}
+
+function change_min_hp(hp) {
+  min_hp = hp;
+  refresh_mpg();
+}
+
+function change_max_hp(hp) {
+  max_hp = hp;
+  refresh_mpg();
+}
+
+function change_min_weight(lbs) {
+  min_weight = lbs;
+  refresh_mpg();
+}
+
+function change_max_weight(lbs) {
+  max_weight = lbs;
+  refresh_mpg();
+}
+
+function change_min_model_year(year) {
+  min_model_year = year;
+  refresh_mpg();
+}
+
+function change_max_model_year(year) {
+  max_model_year = year;
   refresh_mpg();
 }
 
@@ -70,11 +140,11 @@ async function refresh_mpg() {
 }
 
 function clear_mpg() {
-  d3.select('#div_mpg').selectAll('*').remove();
+  d3.select("#div_mpg").selectAll("*").remove();
 }
 
 async function init_all() {
-  data = await d3.csv('https://danqian1296.github.io/DV/auto-mpg.csv');
+  data = await d3.csv("https://danqian1296.github.io/DV/auto-mpg.csv");
   await paint_mpg_by_displacement();
 }
 
@@ -151,11 +221,17 @@ function update_details(d, i) {
 
   d3.select('#div_details').select('svg')
     .append("foreignObject")
-      .attr("width", details_width - summary_margin)
-      .attr("height", details_height - summary_margin)
-      .attr("transform", 'translate(' + summary_margin + ', ' + summary_margin + ')')
+      .attr("width", details_width - details_margin)
+      .attr("height", details_height - details_margin)
+      .attr("transform", 'translate(' + details_margin + ', ' + details_margin + ')')
       .append("xhtml:div")
-      .html(d.car_name);
+      .html(
+        "Model: " + d.car_name + " <br>" +
+        "Year: 19" + d.model_year + " <br>" +
+        "MPG: " + d.mpg + " <br>" +
+        "HP: " + d.horsepower + " <br>" +
+        "Weight: " + d.weight + "lbs <br>" +
+        "Displacement: " + d.displacement + "ci");
 }
 
 function clear_details(d, i) {
@@ -164,6 +240,14 @@ function clear_details(d, i) {
 
 function is_car_selected(car_data) {
   if (!cylinders_selected[car_data.cylinders]) return false;
+  if (Number(car_data.horsepower) < min_hp) return false;
+  if (Number(car_data.horsepower) > max_hp) return false;
+  if (Number(car_data.weight) < min_weight) return false;
+  if (Number(car_data.weight) > max_weight) return false;
+  if (Number(car_data.displacement) < min_displacement) return false;
+  if (Number(car_data.displacement) > max_displacement) return false;
+  if (Number(car_data.model_year) < min_model_year) return false;
+  if (Number(car_data.model_year) > max_model_year) return false;
   return true;
 }
 
