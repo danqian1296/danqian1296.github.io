@@ -22,7 +22,7 @@
 
 <div>
   <p>
-    Here is an analysis of <a href="https://www.kaggle.com/uciml/autompg-dataset?select=auto-mpg.csv"> the car fuel consumption data between 1970 and 1982</a> based on the displacement, horsepower, weight, and model year.
+    Here is an analysis of <a href="https://www.kaggle.com/uciml/autompg-dataset?select=auto-mpg.csv"> the car fuel consumption data between 1970 and 1982</a> based on the displacement, horsepower, weight, and model year. The cars with incomplete data and the few diesel cars are filtered out.
   </p>
 <div>
 
@@ -160,7 +160,7 @@ async function init_all() {
 
 async function paint_mpg_by_displacement() {
   clear_mpg();
-  update_summary('There is a clear negative corelation between the MPG and the displacement. Even if we control for the weight (by setting the weight range to 3000lbs to 3500lbs, for instance), the cars with greater displacement tend to have lower MPG. Also note that the cars with greater displacements have more cylinders (indicated by the larger circles on the right). This is because overly large cylinders and overly small cylinders are uneconomic, making the displacement per cylinder relatively constant.');
+  update_summary('There is a negative corelation between the MPG and the displacement. Even if we control for the weight (by setting the weight range to 3000lbs to 3500lbs, for instance), the cars with greater displacement tend to have lower MPG. Also note that the cars with greater displacements have more cylinders (indicated by the larger circles on the right). This is because overly large cylinders and overly small cylinders are uneconomic, making the displacement per cylinder relatively constant.');
 
   xscale = d3.scaleLinear().domain([0, 600]).range([0, mpg_width - mpg_margin * 2]);
   await paint_mpg(
@@ -172,7 +172,7 @@ async function paint_mpg_by_displacement() {
 
 async function paint_mpg_by_power() {
   clear_mpg();
-  update_summary('TODO: some analysis for power');
+  update_summary('There is a negative corelation between the MPG and the horsepower. Even if we control for the weight (by setting the weight range to 3000lbs to 3500lbs, for instance), the cars with more horsepower tend to have lower MPG.');
 
   xscale = d3.scaleLinear().domain([0, 250]).range([0, mpg_width - mpg_margin * 2]);
   await paint_mpg(
@@ -184,7 +184,7 @@ async function paint_mpg_by_power() {
 
 async function paint_mpg_by_weight() {
   clear_mpg();
-  update_summary('TODO: some analysis for weight');
+  update_summary('There is a negative corelation between the MPG and the weight.');
 
   xscale = d3.scaleLinear().domain([1000, 6000]).range([0, mpg_width - mpg_margin * 2]);
   await paint_mpg(
@@ -196,7 +196,7 @@ async function paint_mpg_by_weight() {
 
 async function paint_mpg_by_model_year() {
   clear_mpg();
-  update_summary('MPG went up over the years. Within each model years, the cars with fewer cylinders (indicated by smaller circles on top) tend to have higher MPG than the cars with more cylinders (indicated by the bigger circles on the bottom). There is a visible spike in MPG for the 1980 model year. The cars of that model year also tend to have fewer cylinders. This is likely related to the oil crisis (Iranian Revolution) in 1978-1779.');
+  update_summary('MPG went up over the years. Within each model years, the cars with fewer cylinders (indicated by smaller circles on top) tend to have higher MPG than the cars with more cylinders (indicated by the bigger circles on the bottom). There is a visible spike in MPG for the 1980 model year. The cars of that model year also tend to have fewer cylinders. This is likely related to the oil crisis (Iranian Revolution) in 1978-1979.');
 
   xscale = d3.scaleLinear().domain([69, 84]).range([0, mpg_width - mpg_margin * 2]);
   await paint_mpg(
