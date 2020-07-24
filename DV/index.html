@@ -22,14 +22,14 @@
 
 <div>
   <p>
-    Here is an analysis of <a href="https://www.kaggle.com/uciml/autompg-dataset?select=auto-mpg.csv"> the car fuel consumption data between 1970 and 1982</a> based on the displacement, horsepower, weight, and model year. The cars with incomplete data and the few diesel cars are filtered out.
+    Here is an analysis of <a href="https://www.kaggle.com/uciml/autompg-dataset?select=auto-mpg.csv"> the car fuel consumption data between 1970 and 1982</a> based on the horsepower, weight, displacement, and model year. The cars with incomplete data and the few diesel cars are filtered out.
   </p>
 <div>
 
 <div id="mpg_tab">
-  <input type="radio" name="mpg_type" value="displacement" onclick="refresh_mpg()" checked> <b>MPG by Displacement</b>
-  <input type="radio" name="mpg_type" value="power" onclick="refresh_mpg()"> <b>MPG by Power</b>
+  <input type="radio" name="mpg_type" value="power" onclick="refresh_mpg()" checked> <b>MPG by Power</b>
   <input type="radio" name="mpg_type" value="weight" onclick="refresh_mpg()"> <b>MPG by Weight</b>
+  <input type="radio" name="mpg_type" value="displacement" onclick="refresh_mpg()"> <b>MPG by Displacement</b>
   <input type="radio" name="mpg_type" value="model_year" onclick="refresh_mpg()"> <b>MPG by Model Year</b>
 </div>
 
@@ -155,7 +155,8 @@ function clear_mpg() {
 
 async function init_all() {
   data = await d3.csv("https://danqian1296.github.io/DV/auto-mpg.csv");
-  await paint_mpg_by_displacement();
+  await paint_mpg_by_power();
+  show_legends();
 }
 
 async function paint_mpg_by_displacement() {
@@ -196,7 +197,7 @@ async function paint_mpg_by_weight() {
 
 async function paint_mpg_by_model_year() {
   clear_mpg();
-  update_summary('MPG went up over the years. Within each model years, the cars with fewer cylinders (indicated by smaller circles on top) tend to have higher MPG than the cars with more cylinders (indicated by the bigger circles on the bottom). There is a visible spike in MPG for the 1980 model year. The cars of that model year also tend to have fewer cylinders. This is likely related to the oil crisis (Iranian Revolution) in 1978-1979.');
+  update_summary('MPG went up over the years. Within each model years, the cars with fewer cylinders (indicated by smaller circles on top) tend to have higher MPG than the cars with more cylinders (indicated by the bigger circles on the bottom).');
 
   xscale = d3.scaleLinear().domain([69, 84]).range([0, mpg_width - mpg_margin * 2]);
   await paint_mpg(
@@ -204,6 +205,32 @@ async function paint_mpg_by_model_year() {
     function(d,i) {return xscale(Number(d.model_year));},
     "Model Year"
   );
+
+  // Add annotation to the chart
+  d3.select("#div_mpg").select("svg")
+    .append("g")
+    .append("rect")
+    .attr("x", 400)
+    .attr("y", 70)
+    .attr("width", 24)
+    .attr("height", 400)
+    .attr("fill", "none")
+    .attr("stroke-width", "2")
+    .attr('stroke', 'red');
+  d3.select('#div_mpg').select('svg')
+    .append("line")
+      .attr("x1", "300")
+      .attr("y1", "25")
+      .attr("x2", "412")
+      .attr("y2", "70")
+      .attr("stroke-width", "2")
+      .attr("stroke", "red");
+  d3.select('#div_mpg').select('svg')
+    .append("text")
+      .attr('transform', 'translate(300, 20)')
+      .style("text-anchor", "middle")
+      .attr("fill", "red")
+      .text("Oil crisis (Iranian Revolution) in 1978-1979");
 }
 
 function update_summary(summary_text) {
@@ -254,7 +281,23 @@ function clear_details(d, i) {
     .attr("r", Number(d.cylinders))
     .style("fill", is_car_selected(d) ? "green" : "grey");
 
-  d3.select("#div_details").selectAll('*').remove();
+  show_legends();
+}
+
+function show_legends() {
+d3.select("#div_details").selectAll('*').remove();
+  d3.select('#div_details')
+    .append('svg')
+    .attr('width', details_width)
+    .attr('height', details_height);
+
+  d3.select('#div_details').select('svg')
+    .append("foreignObject")
+      .attr("width", details_width - details_margin)
+      .attr("height", details_height - details_margin)
+      .attr("transform", 'translate(' + details_margin + ', ' + details_margin + ')')
+      .append("xhtml:div")
+      .html("Each circle represents a car model. The red line is the linear regression of the selected (green) circles. The size of the circles indicates the number of cylinders in the car. Hover over the circles to see the details about the models");
 }
 
 function is_car_selected(car_data) {
@@ -322,7 +365,36 @@ async function paint_mpg(xscale, xfunc, xtext) {
       .attr("transform", 'translate(' + (mpg_width / 2) + ', ' + (mpg_height - mpg_margin / 2)+ ')')
       .style("text-anchor", "middle")
       .text(xtext);
-}
+
+  // Linear Regression
+  n = 0, sum_x = 0, sum_y = 0, sum_xy = 0, sum_xx = 0, sum_yy = 0;
+  for (i = 0; i < data.length; i++) {
+    d = data[i];
+    if (is_car_selected(d)) {
+      x = xfunc(d, 0);
+      y = yscale(Number(d.mpg));
+      sum_x += x;
+      sum_y += y;
+      sum_xy += x*y;
+      sum_xx += x*x;
+      sum_yy += y*y;
+      n++;
+    }
+  }
+  if (n > 1 && n * sum_xx != sum_x * sum_x) {
+    slope = (n * sum_xy - sum_x * sum_y) / (n*sum_xx - sum_x * sum_x);
+    intercept = (sum_y - slope * sum_x) / n;
+    d3.select('#div_mpg').select('svg')
+      .append('g')
+        .attr('transform', 'translate(' + mpg_margin + ', 0)')
+        .append('line')
+        .attr("x1", 0)
+        .attr("y1", intercept)
+        .attr("x2", mpg_width - mpg_margin * 2)
+        .attr("y2", (mpg_width - mpg_margin * 2) * slope + intercept)
+        .style("stroke", "red");
+  }
+};
 
 </script>
 
