@@ -375,23 +375,24 @@ async function paint_mpg(xscale, xfunc, xtext) {
       y = yscale(Number(d.mpg));
       sum_x += x;
       sum_y += y;
-      sum_xy += x*y;
-      sum_xx += x*x;
-      sum_yy += y*y;
+      sum_xy += x * y;
+      sum_xx += x * x;
+      sum_yy += y * y;
       n++;
     }
   }
   if (n > 1 && n * sum_xx != sum_x * sum_x) {
-    slope = (n * sum_xy - sum_x * sum_y) / (n*sum_xx - sum_x * sum_x);
+    slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x);
     intercept = (sum_y - slope * sum_x) / n;
+    max_x = mpg_width - mpg_margin * 2;
     d3.select('#div_mpg').select('svg')
       .append('g')
         .attr('transform', 'translate(' + mpg_margin + ', 0)')
         .append('line')
         .attr("x1", 0)
         .attr("y1", intercept)
-        .attr("x2", mpg_width - mpg_margin * 2)
-        .attr("y2", (mpg_width - mpg_margin * 2) * slope + intercept)
+        .attr("x2", max_x)
+        .attr("y2", max_x * slope + intercept)
         .style("stroke", "red");
   }
 };
